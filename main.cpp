@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-
+#include <string>
 using namespace std;
 
 class Room {
@@ -32,6 +32,12 @@ int main()
 
 
  int age, n, a = 1, i, m;
+ string b;
+
+while(a != 0) {
+ cout << "1. Book" << endl;
+ cout << "2. Records" << endl;
+ cout << "3. Rooms" << endl;
 
  cout << "Enter the command: " << endl;
  cout << "1. Show all available rooms" << endl;
@@ -44,10 +50,22 @@ int main()
  cout << "8. add room" << endl;
  cout << "0. Exit" << endl;
 
- while(a != 0) {
+
  cin >> a;
 
  if (a == 1) {
+    cout << "All available rooms: " << endl;
+    infile.open("rooms.dat", ios::binary);
+    infile.seekg(0, ios::beg);
+    i = 0;
+    while (infile.read((char*)&room, sizeof(room)))
+    {
+        i++;
+        cout << i << ". Room number " << room.room_number << " has " << room.available_beds << " available beds with price: " << room.price << "$ per bed (Type " << room.type << ")"<< endl;
+    }
+    infile.close();
+    cout << endl;
+    cout << "Select the line (Enter 0 to back main menu): "; cin >> a;
 
  }
  else if (a == 2) {}
@@ -106,8 +124,9 @@ int main()
  else {
   cout << "wrong input" << endl;
  }
- }
+ cout << endl;
  system("pause");
+ }
 
  return 0;
 }
