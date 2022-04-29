@@ -7,7 +7,6 @@ class Room {
 public:
  int room_number, available_beds, total_beds;
  double price;
- string type; // Standard, Lux, VIP
 
 
 };
@@ -32,28 +31,25 @@ int main()
 
 
  int age, n, a = 1, i, m;
+ bool is_succsess = 0, is_exists = 0;
  string b;
+ string today = "4/29/2022";
 
 while(a != 0) {
- cout << "1. Book" << endl;
- cout << "2. Records" << endl;
- cout << "3. Rooms" << endl;
-
  cout << "Enter the command: " << endl;
- cout << "1. Show all available rooms" << endl;
- cout << "2. Book a bed" << endl;
- cout << "3. Price" << endl;
- cout << "4. See the records" << endl;
- cout << "5. Delete a record" << endl;
- cout << "6. Register" << endl;
- cout << "7. rooms" << endl;
- cout << "8. add room" << endl;
+ cout << "1. Book" << endl;
+ cout << "2. All Records" << endl;
+ cout << "3. All Rooms" << endl;
+ cout << "4. Add new room" << endl;
  cout << "0. Exit" << endl;
 
 
  cin >> a;
+ cout << endl;
+ switch (a) {
 
- if (a == 1) {
+
+ case 1: {
     cout << "All available rooms: " << endl;
     infile.open("rooms.dat", ios::binary);
     infile.seekg(0, ios::beg);
@@ -61,68 +57,128 @@ while(a != 0) {
     while (infile.read((char*)&room, sizeof(room)))
     {
         i++;
-        cout << i << ". Room number " << room.room_number << " has " << room.available_beds << " available beds with price: " << room.price << "$ per bed (Type " << room.type << ")"<< endl;
+        if (room.available_beds == 0) {
+            cout << i << ". Room number " << room.room_number << " has no available beds. Price of the room: " << room.price << "$ per bed."<< endl;
+        }
+        else {
+            cout << i << ". Room number " << room.room_number << " has " << room.available_beds << " available beds with price: " << room.price << "$ per bed."<< endl;
+        }
+
     }
     infile.close();
     cout << endl;
-    cout << "Select the line (Enter 0 to back main menu): "; cin >> a;
+    cout << "Enter the room number (Enter 0 to back main menu): "; cin >> a;
 
+    if (a != 0) {
+        // decrement available rooms property of the room by 1
+        infile.open("rooms.dat", ios::binary);
+        outfile.open("temp_rooms.dat", ios::binary | ios::app);
+
+        infile.seekg(0, ios::beg);
+        while (infile.read((char*)&room, sizeof(room)))
+        {
+            if (room.room_number == a) {
+                if (room.available_beds == 0) {
+                    cout << "There is no available beds in this room!!!" << endl;
+                } else {
+                    room.available_beds = room.available_beds -1;
+                    is_succsess = 1;
+
+                }
+            }
+
+            outfile.write((char*)&room, sizeof(room));
+        }
+        outfile.close();
+        infile.close();
+        remove("rooms.dat");
+        rename("temp_rooms.dat", "rooms.dat");
+    } else {a = 1;} //just to keep infinite cycle
+
+    if (is_succsess) {
+        is_succsess = 0;
+
+        cout << endl;
+        cout << "Enter First name: "; cin >> log.first_name;
+        cout << "Enter Last name: "; cin >> log.last_name;
+        cout << "Enter Phone number: "; cin >> log.phone_number;
+        log.date = today;
+        log.booked_room = a;
+        log.is_active = 1;
+
+        outfile.open("logs.dat", ios::binary | ios::app);
+        outfile.write((char*)&log, sizeof(log));
+        outfile.close();
+
+        cout << "Successfully registered!" << endl;
+    }
+    break;
  }
- else if (a == 2) {}
- else if (a == 3) {}
- else if (a == 4) {
-  infile.open("logs.dat", ios::binary);
-  infile.seekg(0, ios::beg);
-  while (infile.read((char*)&log, sizeof(log)))
-  {
-   cout << log.first_name << endl;
-   cout << log.last_name << endl;
-   cout << log.phone_number << endl;
-   cout << log.booked_room << endl;
-   cout << log.is_active << endl;
-  }
+
+ case 2: {
+    cout << endl;
+    cout << "<<<<<<- All Records ->>>>>>" << endl;
+    cout << endl;
+    infile.open("logs.dat", ios::binary);
+    infile.seekg(0, ios::beg);
+    while (infile.read((char*)&log, sizeof(log)))
+    {
+        cout << "Customer " << log.first_name << " "  << log.last_name << " registered a bed in room number: " << log.booked_room << ". Phone number: " << log.phone_number << " ";
+        if (log.is_active) {
+            cout << "(Active)" << endl;
+        } else {
+            cout << "(Completed)" << endl;
+        }
+    }
   infile.close();
+  break;
  }
- else if (a == 5) {}
- else if (a == 6) {
-  cout << "first name: "; cin >> log.first_name;
-  cout << "last name: "; cin >> log.last_name;
-  cout << "phone number: "; cin >> log.phone_number;
-  cout << "booked room: "; cin >> log.booked_room;
-  log.is_active = 1;
 
-
-  outfile.open("logs.dat", ios::binary | ios::app);
-  outfile.write((char*)&log, sizeof(log));
-  outfile.close();
+ case 3: {
+  break;
  }
- else if (a == 7) {
+
+ case 4: {
+  cout << endl;
+  cout << "<<<<<<- Add a new Room ->>>>>>" << endl;
+  cout << endl;
+  target:
+  cout << "Enter room number: "; cin >> room.room_number;
+  // check if the room number already exists      >>>>>>>>
   infile.open("rooms.dat", ios::binary);
   infile.seekg(0, ios::beg);
-  while (infile.read((char*)&room, sizeof(room)))
+  while (infile.read((char*)&temp_room, sizeof(temp_room)))
   {
-   cout << room.room_number << endl;
-   cout << room.available_beds << endl;
-   cout << room.total_beds << endl;
-   cout << room.price << endl;
-   cout << room.type << endl;
+        if (temp_room.room_number == room.room_number) {
+                is_exists = 1;
+        }
+
   }
   infile.close();
- }
- else if (a == 8) {
-  cout << "room_number: "; cin >> room.room_number;
-  cout << "available_beds: "; cin >> room.available_beds;
-  cout << "total_beds: "; cin >> room.total_beds;
-  cout << "type: "; cin >> room.type;
-  cout << "price: "; cin >> room.price;
+  if (is_exists) {
+    is_exists = 0;
+    cout << "Room with this number already exists!!!" << endl;
+    goto target;
+  }
+
+  // <<<<<<<<<<<<<<
+
+  cout << "Enter number of beds: "; cin >> room.total_beds;
+  room.available_beds = room.total_beds;
+  cout << "Enter price per bed: "; cin >> room.price;
+
 
   outfile.open("rooms.dat", ios::binary | ios::app);
   outfile.write((char*)&room, sizeof(room));
   outfile.close();
+  cout << "Successfully Added!!" << endl;
+
+  break;
  }
- else if (a == 0) {}
- else {
+ case 0: {cout << "Bye!" << endl; break;}
+ default: {
   cout << "wrong input" << endl;
+ }
  }
  cout << endl;
  system("pause");

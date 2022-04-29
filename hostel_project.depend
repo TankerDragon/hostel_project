@@ -1,5 +1,6 @@
 # depslib dependency file v1.0
-1651148117 source:c:\users\user\desktop\hostel_project\main.cpp
+1651230662 source:c:\users\user\desktop\hostel_project\main.cpp
 	<iostream>
 	<fstream>
+	<string>
 
