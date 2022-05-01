@@ -14,7 +14,7 @@ public:
 class Log {
 public:
  string first_name, last_name, phone_number, date;
- int booked_room;
+ int booked_room, price;
  bool is_active;
 };
 
@@ -30,9 +30,9 @@ int main()
  ofstream outfile;
 
 
- int age, n, a = 1, i, m;
- bool is_succsess = 0, is_exists = 0;
- string b;
+ int age, n, a = 1, i, m, dates, price;
+ bool is_succsess = 0, is_exists = 0, already_deactivated = 0;
+ string b, customer_name;
  string today = "4/29/2022";
 
 while(a != 0) {
@@ -41,6 +41,7 @@ while(a != 0) {
  cout << "2. All Records" << endl;
  cout << "3. All Rooms" << endl;
  cout << "4. Add new room" << endl;
+ cout << "5. Payment" << endl;
  cout << "0. Exit" << endl;
 
 
@@ -50,6 +51,8 @@ while(a != 0) {
 
 
  case 1: {
+     cout << endl;
+    cout << "<<<<<<- Booking ->>>>>>" << endl;
     cout << "All available rooms: " << endl;
     infile.open("rooms.dat", ios::binary);
     infile.seekg(0, ios::beg);
@@ -58,10 +61,10 @@ while(a != 0) {
     {
         i++;
         if (room.available_beds == 0) {
-            cout << i << ". Room number " << room.room_number << " has no available beds. Price of the room: " << room.price << "$ per bed."<< endl;
+            cout << i << ". Room number (" << room.room_number << ") has no available beds. Price of the room: " << room.price << "$ per bed."<< endl;
         }
         else {
-            cout << i << ". Room number " << room.room_number << " has " << room.available_beds << " available beds with price: " << room.price << "$ per bed."<< endl;
+            cout << i << ". Room number (" << room.room_number << ") has " << room.available_beds << " available beds with price: " << room.price << "$ per bed."<< endl;
         }
 
     }
@@ -83,6 +86,7 @@ while(a != 0) {
                 } else {
                     room.available_beds = room.available_beds -1;
                     is_succsess = 1;
+                    price = room.price;
 
                 }
             }
@@ -105,6 +109,7 @@ while(a != 0) {
         log.date = today;
         log.booked_room = a;
         log.is_active = 1;
+        log.price = price;
 
         outfile.open("logs.dat", ios::binary | ios::app);
         outfile.write((char*)&log, sizeof(log));
@@ -135,7 +140,22 @@ while(a != 0) {
  }
 
  case 3: {
-  break;
+    infile.open("rooms.dat", ios::binary);
+    infile.seekg(0, ios::beg);
+    i = 0;
+    while (infile.read((char*)&room, sizeof(room)))
+    {
+        i++;
+        if (room.available_beds == 0) {
+            cout << i << ". Room number (" << room.room_number << ") has no available beds. Price of the room: " << room.price << "$ per bed."<< endl;
+        }
+        else {
+            cout << i << ". Room number (" << room.room_number << ") has " << room.available_beds << " available beds with price: " << room.price << "$ per bed."<< endl;
+        }
+
+    }
+    infile.close();
+    break;
  }
 
  case 4: {
@@ -175,9 +195,73 @@ while(a != 0) {
 
   break;
  }
+ case 5: {
+     is_succsess = 0;
+    cout << endl;
+    cout << "<<<<<<- Payment ->>>>>>" << endl;
+    cout << "Enter Customer's name: "; cin >> customer_name;
+
+    infile.open("logs.dat", ios::binary);
+    infile.seekg(0, ios::beg);
+        while (infile.read((char*)&log, sizeof(log)))
+        {
+            //cout << "Customer " << log.first_name << " "  << log.last_name << " registered a bed in room number: " << log.booked_room << ". Phone number: " << log.phone_number << " ";
+            if (log.first_name == customer_name) {
+                    if (log.is_active == 0) {
+                        cout << "This record is already Deactivated!!!" << endl;
+                        already_deactivated = 1;
+                    } else {
+                        price = log.price;
+                        is_succsess =1;
+                    }
+
+            }
+        }
+    infile.close();
+
+    if (is_succsess) {
+        is_succsess = 0;
+
+        // deactivating recor (but not deleting)
+        infile.open("logs.dat", ios::binary);
+        outfile.open("temp_logs.dat", ios::binary | ios::app);
+
+        infile.seekg(0, ios::beg);
+        while (infile.read((char*)&log, sizeof(log)))
+        {
+            if (log.first_name == customer_name) {
+                    log.is_active = 0;
+            }
+
+            outfile.write((char*)&log, sizeof(log));
+        }
+        outfile.close();
+        infile.close();
+        remove("logs.dat");
+        rename("temp_logs.dat", "logs.dat");
+
+        cout << "Enter days of service: "; cin >> dates;
+        cout << "Total Payment: " << dates*price << "$" << endl;
+        cout << endl;
+        cout << "Successfully Deactivated." << endl;
+        cout << "Thanks for using our service!" << endl;
+        // <<<<<<<<<<<<<<<<
+    }else {
+        if(!already_deactivated) {
+            cout << "Customer not found!!!" << endl;
+        } else {
+            already_deactivated = 0;
+        }
+
+    }
+
+
+
+    break;
+ }
  case 0: {cout << "Bye!" << endl; break;}
  default: {
-  cout << "wrong input" << endl;
+    cout << "wrong input" << endl;
  }
  }
  cout << endl;
